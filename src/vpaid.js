@@ -17,7 +17,7 @@ module.exports = {
 			player.stop();
 			played = true;
 
-			(new vpaid(container, null, {})).loadAdUnit(js.src, function (err, unit) {
+			(new vpaid(container, null, {extraOptions: {zIndex: 4999}})).loadAdUnit(js.src, function (err, unit) {
 				if (err) {
 					return player.play();
 				}

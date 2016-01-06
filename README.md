@@ -32,5 +32,6 @@ player.trigger('vpaid_js', [{
 
 ## Changelog
 
+* 1.0.2: Fix iframe showing under play button
 * 1.0.1: Dependency tweaks for easier downstream builds
 * 1.0.0: Initial release

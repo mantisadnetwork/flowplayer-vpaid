@@ -1,8 +1,8 @@
 {
   "name": "flowplayer-vpaid",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "dependencies": {
-    "vpaid-html5-client": "git://github.com/parisholley/VPAIDHTML5Client.git#inline"
+    "vpaid-html5-client": "git://github.com/parisholley/VPAIDHTML5Client.git#paris"
   },
   "devDependencies": {
     "browserify": "12.0.1",
