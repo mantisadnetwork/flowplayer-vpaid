@@ -1,0 +1,26 @@
+{
+  "name": "flowplayer-vpaid",
+  "version": "1.0.0",
+  "homepage": "https://github.com/mantisadnetwork/flowplayer-vpaid",
+  "description": "VPAID 2.0 (JS) support within Flowplayer 6 HTML",
+  "main": "dist/vpaid.min.js",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "vpaid",
+    "flowplayer",
+    "video"
+  ],
+  "authors": [
+    "Paris Holley"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
