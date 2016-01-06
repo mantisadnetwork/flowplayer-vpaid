@@ -22,6 +22,12 @@ var container = document.getElementById('div');
 var player = flowplayer(container);
 
 vpaid.attach(container, player);
+
+player.trigger('vpaid_js', [{
+    src: 'http://site.com/js',
+    attributes: '',
+    tracker: {} // should be a DMVAST.tracker instance from the vast-client-js project
+}]);
 ```
 
 ## Changelog
