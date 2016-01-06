@@ -1,6 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-
-},{}],2:[function(require,module,exports){
 'use strict';
 
 var METHODS = [
@@ -287,7 +285,7 @@ function addStaticToInterface(Interface, name, value) {
 }
 
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 'use strict';
 
 var IVPAIDAdUnit = require('./IVPAIDAdUnit');
@@ -518,15 +516,17 @@ function callOrTriggerEvent(callback, subscribers, error, result) {
 module.exports = VPAIDAdUnit;
 
 
-},{"./IVPAIDAdUnit":2,"./subscriber":5,"./utils":6}],4:[function(require,module,exports){
-(function (__dirname){
+},{"./IVPAIDAdUnit":1,"./subscriber":4,"./utils":5}],3:[function(require,module,exports){
 'use strict';
-
 
 var utils = require('./utils');
 var unique = utils.unique('vpaidIframe');
 var VPAIDAdUnit = require('./VPAIDAdUnit');
-var defaultTemplate = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n    <script type=\"text/javascript\" src=\"{{iframeURL_JS}}\"></script>\n    <script>\n        parent.postMessage('{\"event\": \"ready\", \"id\": \"{{iframeID}}\"}', window.location.origin);\n    </script>\n    <div class=\"ad-element\">\n    </div>\n</body>\n</html>\n";
+
+var defaultTemplate = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0">';
+defaultTemplate += '<script type="text/javascript" src="{{iframeURL_JS}}"></script><script>';
+defaultTemplate += 'parent.postMessage(\'{"event": "ready", "id": "{{iframeID}}"}\', window.location.origin);';
+defaultTemplate += '</script><div class="ad-element"></div></body></html>';
 
 var AD_STOPPED = 'AdStopped';
 
@@ -731,8 +731,7 @@ module.exports = VPAIDHTML5Client;
 window.VPAIDHTML5Client = VPAIDHTML5Client;
 
 
-}).call(this,"/node_modules/vpaid-html5-client/js")
-},{"./VPAIDAdUnit":3,"./utils":6,"fs":1}],5:[function(require,module,exports){
+},{"./VPAIDAdUnit":2,"./utils":5}],4:[function(require,module,exports){
 'use strict';
 
 function Subscriber() {
@@ -780,7 +779,7 @@ Subscriber.prototype.get = function get(eventName) {
 module.exports = Subscriber;
 
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 /**
@@ -878,11 +877,18 @@ function createIframeWithContent(parent, template, data) {
 function createIframe(parent, url) {
     var nEl = document.createElement('iframe');
     nEl.src = url || 'about:blank';
+    nEl.marginWidth = '0';
+    nEl.marginHeight = '0';
+    nEl.frameBorder = '0';
     nEl.width = '100%';
     nEl.height = '100%';
     nEl.style.position = 'absolute';
     nEl.style.left = '0';
     nEl.style.top = '0';
+    nEl.style.margin = '0px';
+    nEl.style.padding = '0px';
+    nEl.style.border = 'none';
+    nEl.setAttribute('SCROLLING','NO');
     parent.innerHTML = '';
     parent.appendChild(nEl);
     return nEl;
@@ -959,7 +965,7 @@ module.exports = {
 };
 
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var vpaid = require('vpaid-html5-client/js/VPAIDHTML5Client.js');
 
 module.exports = {
@@ -1060,4 +1066,4 @@ module.exports = {
 		});
 	}
 };
-},{"vpaid-html5-client/js/VPAIDHTML5Client.js":4}]},{},[7]);
+},{"vpaid-html5-client/js/VPAIDHTML5Client.js":3}]},{},[6]);

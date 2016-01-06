@@ -1,6 +1,6 @@
 {
   "name": "flowplayer-vpaid",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/mantisadnetwork/flowplayer-vpaid",
   "description": "VPAID 2.0 (JS) support within Flowplayer 6 HTML",
   "main": "dist/vpaid.min.js",
