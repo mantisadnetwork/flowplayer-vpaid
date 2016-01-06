@@ -1,8 +1,9 @@
 {
   "name": "flowplayer-vpaid",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "dependencies": {
-    "vpaid-html5-client": "git://github.com/parisholley/VPAIDHTML5Client.git#paris"
+    "vpaid-html5-client": "git://github.com/parisholley/VPAIDHTML5Client.git#paris",
+    "vpaid-flash-client": "git://github.com/parisholley/VPAIDFLASHClient.git#es6"
   },
   "devDependencies": {
     "browserify": "12.0.1",
@@ -11,7 +12,7 @@
   "scripts": {
     "build": "browserify src/vpaid.js -o dist/vpaid.js && browserify -g uglifyify dist/vpaid.js -o dist/vpaid.min.js"
   },
-  "description": "VPAID 2.0 (JS) support within Flowplayer 6 HTML",
+  "description": "VPAID 2.0 (Flash/JS) support within Flowplayer 6 HTML",
   "main": "src/vpaid.js",
   "repository": {
     "type": "git",
