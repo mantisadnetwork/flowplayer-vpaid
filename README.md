@@ -40,6 +40,7 @@ player.trigger('vpaid_swf', [{
 
 ## Changelog
 
+* 1.1.1: Ability to timeout if ad hasn't loaded
 * 1.1.0: Flash support
 * 1.0.2: Fix iframe showing under play button
 * 1.0.1: Dependency tweaks for easier downstream builds

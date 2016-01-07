@@ -2,7 +2,7 @@ var html5Client = require('vpaid-html5-client/js/VPAIDHTML5Client.js');
 var flashClient = require('vpaid-flash-client/js/VPAIDFlashClient.js');
 
 module.exports = {
-	attach: function (container, player, swf) {
+	attach: function (container, player, swf, timeout) {
 		var played = false;
 		var js = null;
 		var flash = null;
@@ -85,6 +85,8 @@ module.exports = {
 					}
 
 					var lastVolume = null;
+					var started = false;
+
 					var vastVpaidMap = {
 						AdVideoStart: 'start',
 						AdVideoFirstQuartile: 'firstQuartile',
@@ -105,6 +107,8 @@ module.exports = {
 							unit.startAd();
 						},
 						AdStarted: function () {
+							started = true;
+
 							tracker.load();
 
 							unit.getAdVolume(function (err, val) {
@@ -164,6 +168,12 @@ module.exports = {
 						}
 
 						unit.initAd(vpaidContainer.offsetWidth, vpaidContainer.offsetHeight, 'normal', -1, {AdParameters: params}, {});
+
+						setTimeout(function () {
+							if (!started) {
+								return playVideo();
+							}
+						}, timeout || 5000);
 					});
 				});
 			});
