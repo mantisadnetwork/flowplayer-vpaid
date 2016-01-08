@@ -2,16 +2,19 @@ var html5Client = require('vpaid-html5-client/js/VPAIDHTML5Client.js');
 var flashClient = require('vpaid-flash-client/js/VPAIDFlashClient.js');
 
 module.exports = {
-	attach: function (container, player, swf, timeout) {
+	attach: function (config) {
 		var played = false;
 		var js = null;
 		var flash = null;
 		var params = null;
 		var tracker = null;
+		var width = null;
+		var height = null;
 
 		var vpaidContainer = document.createElement('div');
-		vpaidContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:0;visibility:none;overflow:hidden;z-index:4999';
-		container.appendChild(vpaidContainer);
+		vpaidContainer.className = 'vpaid';
+		vpaidContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:0;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;';
+		config.container.appendChild(vpaidContainer);
 
 		var onError = function (err) {
 			if (console && console.error && err) {
@@ -22,33 +25,41 @@ module.exports = {
 		var showVpaid = function () {
 			vpaidContainer.style.visibility = 'visible';
 			vpaidContainer.style.height = '100%';
-			vpaidContainer.style.background = 'white';
+			vpaidContainer.style.background = 'black';
 		};
 
 		var playVideo = function () {
-			container.removeChild(vpaidContainer);
+			try {
+				config.container.removeChild(vpaidContainer);
+			} catch (ex) {
 
-			player.play();
+			}
+
+			config.player.play();
 		};
 
-		player.on('vpaid_js', function (e, config) {
+		config.player.on('vpaid_js', function (e, config) {
 			js = config.src;
 			params = config.parameters;
 			tracker = config.tracker;
+			width = config.width;
+			height = config.height;
 		});
 
-		player.on('vpaid_swf', function (e, config) {
+		config.player.on('vpaid_swf', function (e, config) {
 			flash = config.src;
 			params = config.parameters;
 			tracker = config.tracker;
+			width = config.width;
+			height = config.height;
 		});
 
-		player.on('resume', function () {
-			if ((!js && (!flash || !swf)) || played) {
+		config.player.on('resume', function () {
+			if ((!js && (!flash || !config.swfVpaid)) || played) {
 				return;
 			}
 
-			player.stop();
+			config.player.stop();
 			played = true;
 
 			var createClient = null;
@@ -58,17 +69,50 @@ module.exports = {
 				createClient = function (callback) {
 					callback(new html5Client(vpaidContainer, null, {extraOptions: {zIndex: 4999}}));
 				}
-			} else if (swf) {
+			} else if (config.swfVpaid) {
 				createClient = function (callback) {
-					var fc = new flashClient(vpaidContainer, function (err) {
-						onError(err);
+					var buildFlashClient = function () {
+						var fc = new flashClient(vpaidContainer, function (err) {
+							onError(err);
 
-						callback(err ? null : fc);
-					}, {
-						data: swf,
-						width: vpaidContainer.offsetWidth,
-						height: vpaidContainer.offsetHeight
-					});
+							callback(err ? null : fc);
+						}, {
+							data: config.swfVpaid,
+							width: width || vpaidContainer.offsetWidth,
+							height: height || vpaidContainer.offsetHeight
+						});
+					};
+
+					if (window.swfobject) {
+						return buildFlashClient();
+					}
+
+					if (!config.swfObject) {
+						throw new Error('You must define config.swfObject or include it on the page');
+					}
+
+					var head = document.getElementsByTagName('head')[0];
+
+					var script = document.createElement("script");
+					script.type = "text/javascript";
+					script.async = true;
+					script.src = config.swfObject;
+
+					var done = false;
+
+					script.onload = script.onreadystatechange = function () {
+						if (!done && (!this.readyState || this.readyState == "loaded" || this.readyState == "complete")) {
+							done = true;
+
+							buildFlashClient();
+
+							// Handle memory leak in IE
+							script.onload = script.onreadystatechange = null;
+							head.removeChild(script);
+						}
+					};
+
+					head.appendChild(script);
 				}
 			}
 
@@ -99,7 +143,7 @@ module.exports = {
 						AdPaused: 'pause',
 						AdPlaying: 'resume',
 						AdStopped: function () {
-							player.play();
+							playVideo();
 						},
 						AdLoaded: function () {
 							showVpaid();
@@ -108,7 +152,6 @@ module.exports = {
 						},
 						AdStarted: function () {
 							started = true;
-
 							tracker.load();
 
 							unit.getAdVolume(function (err, val) {
@@ -116,7 +159,7 @@ module.exports = {
 								lastVolume = val;
 							});
 						},
-						AdVideoComplete: function(){
+						AdVideoComplete: function () {
 							tracker.complete();
 
 							playVideo();
@@ -167,13 +210,13 @@ module.exports = {
 							return playVideo();
 						}
 
-						unit.initAd(vpaidContainer.offsetWidth, vpaidContainer.offsetHeight, 'normal', -1, {AdParameters: params}, {});
+						unit.initAd(width, height, 'normal', -1, {AdParameters: params}, {});
 
 						setTimeout(function () {
 							if (!started) {
 								return playVideo();
 							}
-						}, timeout || 5000);
+						}, config.timeout || 5000);
 					});
 				});
 			});
