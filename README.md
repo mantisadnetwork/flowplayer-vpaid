@@ -23,7 +23,12 @@ var container = document.getElementById('div');
 
 var player = flowplayer(container);
 
-vpaid.attach(container, player, '//domain.com/VPAIDFlash.swf');
+vpaid.attach({
+    container: container,
+    player: player,
+    swfVpaid: '//domain.com/VPAIDFlash.swf',
+    swfObject: '//domain.com/swfobject.js'
+});
 
 player.trigger('vpaid_js', [{
     src: 'http://site.com/file.js',
