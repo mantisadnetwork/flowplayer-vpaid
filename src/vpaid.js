@@ -9,6 +9,7 @@ module.exports = {
 		var loaded = false;
 		var vpaidDetected = false;
 		var vpaidStarted = false;
+		var videoPlayed = false;
 
 		var vpaidContainer = document.createElement('div');
 		vpaidContainer.className = 'vpaid';
@@ -31,6 +32,12 @@ module.exports = {
 		};
 
 		var playVideo = function () {
+			if(videoPlayed){
+				return;
+			}
+
+			videoPlayed = true;
+
 			try {
 				config.container.removeChild(vpaidContainer);
 			} catch (ex) {
@@ -104,7 +111,9 @@ module.exports = {
 						// TODO: tracker needs to implement (ClickTracking is a VAST element under<VideoClicks>)
 					},
 					AdError: function () {
-						config.tracker.errorWithCode(901)
+						config.tracker.errorWithCode(901);
+
+						playVideo();
 					}
 				};
 
