@@ -8,6 +8,7 @@ module.exports = {
 		var vpaidUnit = undefined;
 		var loaded = false;
 		var vpaidDetected = false;
+		var vpaidStarted = false;
 
 		var vpaidContainer = document.createElement('div');
 		vpaidContainer.className = 'vpaid';
@@ -48,7 +49,6 @@ module.exports = {
 				vpaidUnit = unit;
 
 				var lastVolume = null;
-				var started = false;
 
 				var vastVpaidMap = {
 					AdVideoStart: 'start',
@@ -68,7 +68,7 @@ module.exports = {
 						loaded = true;
 					},
 					AdStarted: function () {
-						started = true;
+						vpaidStarted = true;
 						config.tracker.load();
 
 						unit.getAdVolume(function (err, val) {
@@ -125,7 +125,7 @@ module.exports = {
 						return onError(err);
 					}
 
-					unit.initAd(config.width, config.height, 'normal', -1, {AdParameters: config.params}, {});
+					unit.initAd(config.width, config.height, 'normal', -1, {AdParameters: config.parameters}, {});
 				});
 			}
 		};
@@ -227,6 +227,13 @@ module.exports = {
 				}
 
 				unit.startAd();
+
+				// in case ad does not start
+				setTimeout(function () {
+					if (!vpaidStarted) {
+						playVideo();
+					}
+				}, timeout);
 			});
 		});
 	}

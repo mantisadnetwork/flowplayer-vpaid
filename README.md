@@ -45,6 +45,7 @@ player.trigger('vpaid_swf', [{
 
 ## Changelog
 
+* 1.2.2: Fix parameters and add timeout if unit doesn't play in time
 * 1.2.1: Preload vPAID ad to prevent delay on play
 * 1.2.0: API change, lazy load swfobject, edge cases and styling
 * 1.1.1: Ability to timeout if ad hasn't loaded
