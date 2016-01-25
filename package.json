@@ -1,6 +1,6 @@
 {
   "name": "flowplayer-vpaid",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "dependencies": {
     "vpaid-html5-client": "git://github.com/parisholley/VPAIDHTML5Client.git#paris",
     "vpaid-flash-client": "git://github.com/parisholley/VPAIDFLASHClient.git#es6"

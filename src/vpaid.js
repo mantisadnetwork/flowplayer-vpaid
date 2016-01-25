@@ -1,5 +1,5 @@
 var html5Client = require('vpaid-html5-client/js/VPAIDHTML5Client.js');
-var flashClient = require('vpaid-flash-client/js/VPAIDFlashClient.js');
+var flashClient = require('vpaid-flash-client/js/VPAIDFLASHClient.js');
 
 module.exports = {
 	attach: function (config) {
