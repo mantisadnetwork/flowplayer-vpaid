@@ -45,6 +45,7 @@ player.trigger('vpaid_swf', [{
 
 ## Changelog
 
+* 1.2.5: Support autoplay and trigger events on player
 * 1.2.4: fix case sensitivity
 * 1.2.3: Play video on ad error
 * 1.2.2: Fix parameters and add timeout if unit doesn't play in time

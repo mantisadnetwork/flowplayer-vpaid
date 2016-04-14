@@ -44,10 +44,11 @@ module.exports = {
 
 			}
 
+			config.player.trigger('vpaid_end');
 			config.player.play();
 		};
 
-		var onUnit = function (config, event) {
+		var onUnit = function (unitConfig, event, autoplay) {
 			return function (err, unit) {
 				if (err) {
 					return onError(err);
@@ -73,10 +74,16 @@ module.exports = {
 					},
 					AdLoaded: function () {
 						loaded = true;
+						config.player.trigger('vpaid_loaded');
+
+						if(autoplay){
+							startVpaid();
+						}
 					},
 					AdStarted: function () {
 						vpaidStarted = true;
-						config.tracker.load();
+						unitConfig.tracker.load();
+						config.player.trigger('vpaid_start');
 
 						unit.getAdVolume(function (err, val) {
 							// TODO: handle error
@@ -84,12 +91,12 @@ module.exports = {
 						});
 					},
 					AdVideoComplete: function () {
-						config.tracker.complete();
+						unitConfig.tracker.complete();
 
 						playVideo();
 					},
 					AdSkipped: function () {
-						config.tracker.skip();
+						unitConfig.tracker.skip();
 
 						playVideo();
 					},
@@ -101,9 +108,9 @@ module.exports = {
 						unit.getAdVolume(function (err, val) {
 							// TODO: handle error
 							if (val == 0 && lastVolume > 0) {
-								config.tracker.setMuted(true);
+								unitConfig.tracker.setMuted(true);
 							} else if (val > 0 && lastVolume == 0) {
-								config.tracker.setMuted(false);
+								unitConfig.tracker.setMuted(false);
 							}
 						});
 					},
@@ -111,7 +118,7 @@ module.exports = {
 						// TODO: tracker needs to implement (ClickTracking is a VAST element under<VideoClicks>)
 					},
 					AdError: function () {
-						config.tracker.errorWithCode(901);
+						unitConfig.tracker.errorWithCode(901);
 
 						playVideo();
 					}
@@ -122,7 +129,7 @@ module.exports = {
 						var val = vastVpaidMap[key];
 
 						if (typeof val == 'string') {
-							return config.tracker.track(val);
+							return unitConfig.tracker.track(val);
 						}
 
 						val(arguments);
@@ -134,19 +141,21 @@ module.exports = {
 						return onError(err);
 					}
 
-					unit.initAd(config.width, config.height, 'normal', -1, {AdParameters: config.parameters}, {});
+					config.player.trigger('vpaid_init');
+
+					unit.initAd(unitConfig.width, unitConfig.height, 'normal', -1, {AdParameters: unitConfig.parameters}, {});
 				});
 			}
 		};
 
-		config.player.on('vpaid_js', function (e, config) {
+		config.player.on('vpaid_js', function (e, config, autoPlay) {
 			vpaidDetected = true;
 
 			var client = new html5Client(vpaidContainer, null, {extraOptions: {zIndex: 4999}});
-			client.loadAdUnit(config.src, onUnit(config, 'subscribe'));
+			client.loadAdUnit(config.src, onUnit(config, 'subscribe', autoPlay));
 		});
 
-		config.player.on('vpaid_swf', function (e, flashConfig) {
+		config.player.on('vpaid_swf', function (e, flashConfig, autoPlay) {
 			if (!config.swfVpaid) {
 				throw new Error('You must define a url for config.swfVpaid');
 			}
@@ -159,7 +168,7 @@ module.exports = {
 						return onError(err);
 					}
 
-					fc.loadAdUnit(flashConfig.src, onUnit(flashConfig, 'on'));
+					fc.loadAdUnit(flashConfig.src, onUnit(flashConfig, 'on', autoPlay));
 				}, {
 					data: config.swfVpaid,
 					width: flashConfig.width || vpaidContainer.offsetWidth,
@@ -199,7 +208,7 @@ module.exports = {
 			head.appendChild(script);
 		});
 
-		config.player.on('resume', function () {
+		var startVpaid = function(){
 			if (!vpaidDetected || played) {
 				return;
 			}
@@ -244,6 +253,8 @@ module.exports = {
 					}
 				}, timeout);
 			});
-		});
+		};
+
+		config.player.on('resume', startVpaid);
 	}
 };
