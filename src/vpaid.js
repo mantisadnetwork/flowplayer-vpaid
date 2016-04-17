@@ -7,6 +7,7 @@ module.exports = {
 		var timeout = config.timeout || 5000;
 		var vpaidUnit = undefined;
 		var loaded = false;
+		var cancel = false;
 		var vpaidDetected = false;
 		var vpaidStarted = false;
 		var videoPlayed = false;
@@ -32,7 +33,7 @@ module.exports = {
 		};
 
 		var playVideo = function () {
-			if(videoPlayed){
+			if (videoPlayed) {
 				return;
 			}
 
@@ -57,6 +58,7 @@ module.exports = {
 				vpaidUnit = unit;
 
 				var lastVolume = null;
+				var cancel = false;
 
 				var vastVpaidMap = {
 					AdVideoStart: 'start',
@@ -70,13 +72,15 @@ module.exports = {
 					AdPaused: 'pause',
 					AdPlaying: 'resume',
 					AdStopped: function () {
+						cancel = true;
+
 						playVideo();
 					},
 					AdLoaded: function () {
 						loaded = true;
 						config.player.trigger('vpaid_loaded');
 
-						if(autoplay){
+						if (autoplay) {
 							startVpaid();
 						}
 					},
@@ -118,6 +122,8 @@ module.exports = {
 						// TODO: tracker needs to implement (ClickTracking is a VAST element under<VideoClicks>)
 					},
 					AdError: function () {
+						cancel = true;
+
 						unitConfig.tracker.errorWithCode(901);
 
 						playVideo();
@@ -126,6 +132,10 @@ module.exports = {
 
 				Object.keys(vastVpaidMap).forEach(function (key) {
 					return unit[event](key, function () {
+						if (cancel) {
+							return;
+						}
+
 						var val = vastVpaidMap[key];
 
 						if (typeof val == 'string') {
@@ -144,6 +154,13 @@ module.exports = {
 					config.player.trigger('vpaid_init');
 
 					unit.initAd(unitConfig.width, unitConfig.height, 'normal', -1, {AdParameters: unitConfig.parameters}, {});
+
+					setTimeout(function () {
+						if (!loaded) {
+							cancel = true;
+							onError('Timed out waiting for VPAID ad to load.');
+						}
+					}, timeout);
 				});
 			}
 		};
@@ -208,8 +225,8 @@ module.exports = {
 			head.appendChild(script);
 		});
 
-		var startVpaid = function(){
-			if (!vpaidDetected || played) {
+		var startVpaid = function () {
+			if (!vpaidDetected || played || cancel) {
 				return;
 			}
 
