@@ -26,6 +26,11 @@ module.exports = {
 			return playVideo();
 		};
 
+		var hideVpaid = function () {
+			vpaidContainer.style.visibility = 'none';
+			vpaidContainer.style.height = '100%';
+		};
+
 		var showVpaid = function () {
 			vpaidContainer.style.visibility = 'visible';
 			vpaidContainer.style.height = '100%';
@@ -82,6 +87,9 @@ module.exports = {
 
 						if (autoplay) {
 							startVpaid();
+						} else {
+							// need to ensure user can click play button player
+							hideVpaid();
 						}
 					},
 					AdStarted: function () {
@@ -231,6 +239,8 @@ module.exports = {
 			if (!vpaidDetected || played || cancel) {
 				return;
 			}
+
+			showVpaid();
 
 			played = true;
 
