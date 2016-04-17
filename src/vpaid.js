@@ -153,6 +153,8 @@ module.exports = {
 
 					config.player.trigger('vpaid_init');
 
+					showVpaid();
+
 					unit.initAd(unitConfig.width, unitConfig.height, 'normal', -1, {AdParameters: unitConfig.parameters}, {});
 
 					setTimeout(function () {
@@ -231,8 +233,6 @@ module.exports = {
 			}
 
 			played = true;
-
-			showVpaid();
 
 			config.player.stop();
 

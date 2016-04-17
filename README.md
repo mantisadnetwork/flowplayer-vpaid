@@ -45,6 +45,7 @@ player.trigger('vpaid_swf', [{
 
 ## Changelog
 
+* 1.2.7: Have to show overlay prior to init otherwise it can fail viewability tests
 * 1.2.6: Timeout if ad is never loaded
 * 1.2.5: Support autoplay and trigger events on player
 * 1.2.4: fix case sensitivity
