@@ -17,13 +17,11 @@ If you do not want to fire the vpaid_js event your self (because you parsed your
 **Note**: [SWFObject](https://github.com/swfobject/swfobject/blob/master/swfobject/swfobject.js) is required to show flash creatives and you will need to host the [VPAIDFlash.swf](https://github.com/MailOnline/VPAIDFLASHClient/blob/master/bin/VPAIDFlash.swf) file.
 
 ```
-var vast = require('flowplayer-vpaid');
-
 var container = document.getElementById('div');
 
 var player = flowplayer(container);
 
-vpaid.attach({
+fpvpaid.attach({
     container: container,
     player: player,
     swfVpaid: '//domain.com/VPAIDFlash.swf',
@@ -45,6 +43,7 @@ player.trigger('vpaid_swf', [{
 
 ## Changelog
 
+* 1.3.0: Update build to expose code as "fpvpaid" global variable when using dist/ files directly
 * 1.2.8: Hide overlay after ad is loaded
 * 1.2.7: Have to show overlay prior to init otherwise it can fail viewability tests
 * 1.2.6: Timeout if ad is never loaded
