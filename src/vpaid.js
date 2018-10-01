@@ -1,3 +1,5 @@
+'use strict';
+
 var html5Client = require('vpaid-html5-client/js/VPAIDHTML5Client.js');
 var flashClient = require('vpaid-flash-client/js/VPAIDFLASHClient.js');
 
@@ -15,9 +17,8 @@ module.exports = {
 		var vpaidContainer = document.createElement('div');
 		vpaidContainer.className = 'vpaid';
 		vpaidContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:0;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;';
-		vpaidContainer.innerHTML = '<span style="color:white;">Loading, please wait..</span>';
+		vpaidContainer.innerHTML = '<video id="vpaid-video">Loading, please wait..</video>';
 		config.container.appendChild(vpaidContainer);
-
 		var onError = function (err) {
 			if (console && console.error && err) {
 				console.error(err);
@@ -59,7 +60,6 @@ module.exports = {
 				if (err) {
 					return onError(err);
 				}
-
 				vpaidUnit = unit;
 
 				var lastVolume = null;
@@ -70,7 +70,6 @@ module.exports = {
 					AdVideoFirstQuartile: 'firstQuartile',
 					AdVideoMidpoint: 'midpoint',
 					AdVideoThirdQuartile: 'thirdQuartile',
-					AdVideoComplete: 'complete',
 					AdUserAcceptInvitation: 'acceptInvitation',
 					AdUserMinimize: 'collapse',
 					AdUserClose: 'close',
@@ -78,7 +77,6 @@ module.exports = {
 					AdPlaying: 'resume',
 					AdStopped: function () {
 						cancel = true;
-
 						playVideo();
 					},
 					AdLoaded: function () {
@@ -104,12 +102,10 @@ module.exports = {
 					},
 					AdVideoComplete: function () {
 						unitConfig.tracker.complete();
-
 						playVideo();
 					},
 					AdSkipped: function () {
 						unitConfig.tracker.skip();
-
 						playVideo();
 					},
 					AdImpression: function () {
@@ -129,14 +125,20 @@ module.exports = {
 					AdClickThru: function () {
 						// TODO: tracker needs to implement (ClickTracking is a VAST element under<VideoClicks>)
 					},
-					AdError: function () {
+					AdError: function (error) {
 						cancel = true;
-
 						unitConfig.tracker.errorWithCode(901);
 
 						playVideo();
 					}
 				};
+
+				function stackTrace() {
+					var err = new Error();
+					return err.stack;
+				}
+
+				//unit.subscribe('AdLoaded', vastVpaidMap.onStart);
 
 				Object.keys(vastVpaidMap).forEach(function (key) {
 					return unit[event](key, function () {
@@ -160,9 +162,7 @@ module.exports = {
 					}
 
 					config.player.trigger('vpaid_init');
-
 					showVpaid();
-
 					unit.initAd(unitConfig.width, unitConfig.height, 'normal', -1, {AdParameters: unitConfig.parameters}, {});
 
 					setTimeout(function () {
@@ -171,18 +171,27 @@ module.exports = {
 							onError('Timed out waiting for VPAID ad to load.');
 						}
 					}, timeout);
+
 				});
+
 			}
 		};
 
-		config.player.on('vpaid_js', function (e, config, autoPlay) {
+		config.player.on('vpaid_js', function (e, conf, autoPlay) {
 			vpaidDetected = true;
+			autoPlay = true;
 
-			var client = new html5Client(vpaidContainer, null, {extraOptions: {zIndex: 4999}});
-			client.loadAdUnit(config.src, onUnit(config, 'subscribe', autoPlay));
+			if (null !== conf) {
+				document.getElementById("vpaid-video").width = conf.width;
+				document.getElementById("vpaid-video").height = conf.height;
+			}
+
+			var client = new html5Client(vpaidContainer, document.getElementById("vpaid-video"), {extraOptions: {zIndex: 4999}});
+			client.loadAdUnit(conf.src, onUnit(conf, 'subscribe', autoPlay));
 		});
 
 		config.player.on('vpaid_swf', function (e, flashConfig, autoPlay) {
+
 			if (!config.swfVpaid) {
 				throw new Error('You must define a url for config.swfVpaid');
 			}
@@ -239,13 +248,11 @@ module.exports = {
 			if (!vpaidDetected || played || cancel) {
 				return;
 			}
-
 			showVpaid();
 
 			played = true;
 
 			config.player.stop();
-
 			var getUnit = function (callback) {
 				if (vpaidUnit && loaded) {
 					return callback(vpaidUnit);
@@ -258,7 +265,8 @@ module.exports = {
 				}, 100);
 
 				setTimeout(function () {
-					if (!vpaidUnit || !loaded) {
+					if (!vpaidUnit || !loaded)
+					{
 						clearInterval(checkClient);
 
 						callback();
@@ -272,16 +280,19 @@ module.exports = {
 				}
 
 				unit.startAd();
-
 				// in case ad does not start
+
 				setTimeout(function () {
 					if (!vpaidStarted) {
 						playVideo();
 					}
 				}, timeout);
+
 			});
 		};
 
-		config.player.on('resume', startVpaid);
+		config.player.on('resume', function() {
+			startVpaid();
+		});
 	}
 };
