@@ -13,12 +13,31 @@ module.exports = {
 		var vpaidDetected = false;
 		var vpaidStarted = false;
 		var videoPlayed = false;
+		var click = true;
 
 		var vpaidContainer = document.createElement('div');
 		vpaidContainer.className = 'vpaid';
 		vpaidContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:0;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;';
-		vpaidContainer.innerHTML = '<video id="vpaid-video">Loading, please wait..</video>';
+		vpaidContainer.innerHTML = '<video id="vpaid-video" muted autoplay>Loading, please wait..</video>';
+		var vpaidSkipAd = document.createElement('div');
+		vpaidSkipAd.className = 'vpaid_counter';
+		vpaidSkipAd.style.cssText = 'position:absolute;top:50%;left:75%;width:26%;height:0;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;cursor:pointer;border:white;';
+		var vpaidRemainingTime = document.createElement('div');
+		vpaidRemainingTime.className = 'vpaid_remainingTime';
+		vpaidRemainingTime.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:10%;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;';
+		var vpaidTimeToSkipContainer = document.createElement('div');
+		vpaidTimeToSkipContainer.className = 'vpaid_skipTime';
+		vpaidTimeToSkipContainer.style.cssText = 'position:absolute;top:90%;left:0;width:100%;height:10%;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;cursor:pointer;border:white;';
+		var vpaidVolumeControlContainer = document.createElement('div');
+		vpaidVolumeControlContainer.className = 'vpaid_volume';
+		vpaidVolumeControlContainer.style.cssText = 'position:absolute;top:90%;left:80%;width:20%;height:10%;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;cursor:pointer;border:white;';
+		vpaidVolumeControlContainer.innerHTML = '<div style="color: white;font-size: 14px;">Włącz dźwięk</div>';
 		config.container.appendChild(vpaidContainer);
+		config.container.appendChild(vpaidSkipAd);
+		config.container.appendChild(vpaidRemainingTime);
+		config.container.appendChild(vpaidTimeToSkipContainer);
+		config.container.appendChild(vpaidVolumeControlContainer);
+
 		var onError = function (err) {
 			if (console && console.error && err) {
 				console.error(err);
@@ -27,17 +46,30 @@ module.exports = {
 			return playVideo();
 		};
 
+		var videoContainer =  document.getElementById('vpaid-video');
+
 		var hideVpaid = function () {
 			vpaidContainer.style.visibility = 'none';
 			vpaidContainer.style.height = '100%';
+			vpaidSkipAd.style.visibility = 'none';
+			vpaidSkipAd.style.height = '10%';
+			vpaidRemainingTime.style.visibility = 'none';
+			vpaidRemainingTime.style.height = '100%';
 		};
 
 		var showVpaid = function () {
 			vpaidContainer.style.visibility = 'visible';
 			vpaidContainer.style.height = '100%';
 			vpaidContainer.style.background = 'black';
+			vpaidRemainingTime.style.visibility = 'visible';
+			vpaidRemainingTime.style.height = '10%';
 		};
-
+		var showVpaidSkipAd = function () {
+			vpaidSkipAd.style.visibility = 'visible';
+			vpaidSkipAd.style.height = '12%';
+			vpaidSkipAd.style.background = 'black';
+			vpaidSkipAd.innerHTML = '<div id="vpaid-skip"  style="color: white;font-size: 17px;"><strong>Pomiń</strong></div>'
+		};
 		var playVideo = function () {
 			if (videoPlayed) {
 				return;
@@ -47,6 +79,11 @@ module.exports = {
 
 			try {
 				config.container.removeChild(vpaidContainer);
+				config.container.removeChild(vpaidSkipAd);
+				config.container.removeChild(vpaidRemainingTime);
+				config.container.removeChild(vpaidTimeToSkipContainer);
+				config.container.removeChild(vpaidVolumeControlContainer);
+
 			} catch (ex) {
 
 			}
@@ -122,7 +159,17 @@ module.exports = {
 							}
 						});
 					},
-					AdClickThru: function () {
+					AdClickThru: function (a) {
+						if (typeof (a[0])) {
+							if (a[0].playerHandles == true) {
+								unitConfig.tracker.click()
+
+							} else {
+								if ([0].playerHandles == false) {
+
+								}
+							}
+						}
 						// TODO: tracker needs to implement (ClickTracking is a VAST element under<VideoClicks>)
 					},
 					AdError: function (error) {
@@ -132,7 +179,6 @@ module.exports = {
 						playVideo();
 					}
 				};
-
 				function stackTrace() {
 					var err = new Error();
 					return err.stack;
@@ -155,7 +201,24 @@ module.exports = {
 						val(arguments);
 					});
 				});
+				vpaidSkipAd.addEventListener('click', function () {
+					unit.skipAd();
+				});
 
+				vpaidVolumeControlContainer.addEventListener('click', function () {
+					if (click === true) {
+						unitConfig.tracker.setMuted(false)
+						videoContainer.muted = false
+						vpaidVolumeControlContainer.innerHTML = '<div style="color: white;font-size: 14px;">Wycisz</div>'
+						click = false
+					} else {
+						unitConfig.tracker.setMuted(true)
+						videoContainer.muted = true
+						vpaidVolumeControlContainer.innerHTML = '<div style="color: white;font-size: 14px;">Włącz dźwięk</div>'
+						click = true
+					}
+
+				})
 				unit.handshakeVersion('2.0', function onHandShake(err) {
 					if (err) {
 						return onError(err);
@@ -249,9 +312,7 @@ module.exports = {
 				return;
 			}
 			showVpaid();
-
 			played = true;
-
 			config.player.stop();
 			var getUnit = function (callback) {
 				if (vpaidUnit && loaded) {
@@ -294,5 +355,33 @@ module.exports = {
 		config.player.on('resume', function() {
 			startVpaid();
 		});
+
+		var vpaidTime = document.getElementById('vpaid-video')
+		vpaidTime.ontimeupdate = function () {
+			var vpaidTimeRemaining = Math.round(vpaidTime.duration - vpaidTime.currentTime)
+			var vpaidTimeToSkip = Math.round(vpaidTime.currentTime - 15)
+			if (isNaN(vpaidTimeRemaining)) {
+				vpaidRemainingTime.innerHTML = ''
+
+			} else {
+				vpaidRemainingTime.innerHTML = '<div style="color: white;font-size: 16px;">Reklama skończy się za : ' + vpaidTimeRemaining + '</div>'
+			}
+			if (Math.round(vpaidTime.duration) > 15) {
+				if (vpaidTimeToSkip >= 0) {
+					vpaidTimeToSkipContainer.innerHTML = ''
+
+				} else {
+					vpaidTimeToSkipContainer.innerHTML = '<div style="color: white;font-size: 16px;">Możesz pominąć reklamę za : ' + Math.abs(vpaidTimeToSkip) + '</div>'
+
+				}
+
+			}
+
+			var vpaidCurrentTime = vpaidTime.currentTime
+			if (Math.round(vpaidCurrentTime) === 15) {
+				showVpaidSkipAd()
+
+			}
+		}
 	}
 };
