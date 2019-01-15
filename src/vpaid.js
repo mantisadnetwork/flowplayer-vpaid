@@ -18,7 +18,20 @@ module.exports = {
 		vpaidContainer.className = 'vpaid';
 		vpaidContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:0;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;';
 		vpaidContainer.innerHTML = '<video id="vpaid-video">Loading, please wait..</video>';
+		var vpaidSkipAd = document.createElement('div');
+		vpaidSkipAd.className = 'vpaid_counter';
+		vpaidSkipAd.style.cssText = 'position:absolute;top:50%;left:75%;width:26%;height:0;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;cursor:pointer;border:white;';
+		var vpaidRemainingTime = document.createElement('div');
+		vpaidRemainingTime.className = 'vpaid_remainingTime';
+		vpaidRemainingTime.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:10%;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;';
+		var vpaidPlayButton = document.createElement('div');
+		vpaidPlayButton.className = 'vpaid_play_button';
+		vpaidPlayButton.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:50%;visibility:none;overflow:hidden;z-index:4999;display:flex;align-items:center;justify-content:center;';
 		config.container.appendChild(vpaidContainer);
+		config.container.appendChild(vpaidSkipAd);
+		config.container.appendChild(vpaidRemainingTime);
+		config.container.appendChild(vpaidPlayButton);
+
 		var onError = function (err) {
 			if (console && console.error && err) {
 				console.error(err);
@@ -30,14 +43,25 @@ module.exports = {
 		var hideVpaid = function () {
 			vpaidContainer.style.visibility = 'none';
 			vpaidContainer.style.height = '100%';
+			vpaidSkipAd.style.visibility = 'none';
+			vpaidSkipAd.style.height = '10%';
+			vpaidRemainingTime.style.visibility = 'none';
+			vpaidRemainingTime.style.height = '100%';
 		};
 
 		var showVpaid = function () {
 			vpaidContainer.style.visibility = 'visible';
 			vpaidContainer.style.height = '100%';
 			vpaidContainer.style.background = 'black';
+			vpaidRemainingTime.style.visibility = 'visible';
+			vpaidRemainingTime.style.height = '10%';
 		};
-
+		var showVpaidSkipAd = function () {
+			vpaidSkipAd.style.visibility = 'visible';
+			vpaidSkipAd.style.height = '12%';
+			vpaidSkipAd.style.background = 'black';
+			vpaidSkipAd.innerHTML = '<div id="vpaid-skip"  style="color: white;font-size: 17px;"><strong>Pomiń</strong></div>'
+		}
 		var playVideo = function () {
 			if (videoPlayed) {
 				return;
@@ -47,6 +71,8 @@ module.exports = {
 
 			try {
 				config.container.removeChild(vpaidContainer);
+				config.container.removeChild(vpaidSkipAd);
+				config.container.removeChild(vpaidRemainingTime);
 			} catch (ex) {
 
 			}
@@ -155,7 +181,9 @@ module.exports = {
 						val(arguments);
 					});
 				});
-
+				vpaidSkipAd.addEventListener('click', function () {
+					unit.skipAd();
+				});
 				unit.handshakeVersion('2.0', function onHandShake(err) {
 					if (err) {
 						return onError(err);
@@ -249,9 +277,7 @@ module.exports = {
 				return;
 			}
 			showVpaid();
-
 			played = true;
-
 			config.player.stop();
 			var getUnit = function (callback) {
 				if (vpaidUnit && loaded) {
@@ -294,5 +320,41 @@ module.exports = {
 		config.player.on('resume', function() {
 			startVpaid();
 		});
+
+		var vpaidTime = document.getElementById('vpaid-video');
+		var vpaidPromise = document.getElementById('vpaid-video');
+
+		const playPromise = vpaidPromise.play();
+		console.log(playPromise);
+		if (playPromise !== null) {
+			startVpaid();
+
+			playPromise.catch(() => {
+				vpaidPlayButton.style.visibility = 'visible';
+				vpaidPlayButton.style.height = '50%';
+				vpaidPlayButton.innerHTML = '<div  style="color: white;font-size: 17px;"><strong>mute</strong></div>'
+				vpaidPlayButton.addEventListener('click',function ()
+				{
+
+					vpaidPromise.play();
+
+				}) })
+		}
+
+		vpaidTime.ontimeupdate = function () {
+			var vpaidTimeRemaining = Math.round(vpaidTime.duration - vpaidTime.currentTime);
+			if (isNaN(vpaidTimeRemaining)) {
+				vpaidRemainingTime.innerHTML = '';
+
+			} else {
+				vpaidRemainingTime.innerHTML = '<div style="color: white;font-size: 16px;">Reklama skończy się za  : ' + vpaidTimeRemaining + '</div>'
+
+			}
+			var vpaidCurrentTime = vpaidTime.currentTime;
+			if (vpaidCurrentTime >= 15) {
+				showVpaidSkipAd();
+
+			}
+		};
 	}
 };
